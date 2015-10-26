@@ -71,6 +71,7 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
                 guard let cell = sender as? UITableViewCell,
                  let indexPath = tableView.indexPathForCell(cell) else {return}
                 destination.task = TaskController.sharedTaskController.taskArray[indexPath.row]
+                destination.taskIndex = indexPath.row
                 
                 //                _ = destination.loadView()
 //                guard let cell = sender as? UITableViewCell,

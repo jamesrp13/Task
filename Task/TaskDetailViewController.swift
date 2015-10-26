@@ -8,7 +8,7 @@
 
 import UIKit
 
-class TaskDetailViewController: UIViewController {
+class TaskDetailViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
 
     @IBOutlet weak var taskTitleTextField: UITextField!
     @IBOutlet weak var dateButton: UIButton!
@@ -16,18 +16,30 @@ class TaskDetailViewController: UIViewController {
     @IBOutlet weak var notesTextView: UITextView!
     @IBOutlet var dateButtonHeightConstraint: NSLayoutConstraint!
     @IBOutlet var datePickerHeightConstraint: NSLayoutConstraint!
-
+    
     var task: Task?
+    var taskIndex: Int?
+    var dateAdded = false
 
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        let formatter = NSDateFormatter()
+        formatter.dateStyle = NSDateFormatterStyle.LongStyle
+        formatter.timeStyle = .ShortStyle
+        dateButton.setTitle(formatter.stringFromDate(datePicker.date), forState: .Normal)
+        dateDisplayedView()
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        datePicker.addTarget(self, action: "datePickerChanged", forControlEvents: .ValueChanged)
         datePickerHeightConstraint.active = false
         dateButtonHeightConstraint.active = true
         if let task = task {
-        updateWithTask(task)
+            updateWithTask(task)
         }
+        
+        datePicker.minimumDate = NSDate()
         // Do any additional setup after loading the view.
     }
 
@@ -36,48 +48,54 @@ class TaskDetailViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func dueDateButtonPressed(sender: AnyObject) {
+    // MARK: View updating
+    
+    func textViewDidBeginEditing(textView: UITextView) {
+        dateDisplayedView()
+    }
+    
+    func textViewDidEndEditing(textView: UITextView) {
+        textView.resignFirstResponder()
+    }
+    
+    func textFieldDidBeginEditing(textField: UITextField) {
+        dateDisplayedView()
+    }
+    
+    func datePickerView() {
         dateButton.hidden = true
         datePicker.hidden = false
         dateButtonHeightConstraint.active = false
         datePickerHeightConstraint.active = true
     }
-
-    @IBAction func saveButtonPressed(sender: AnyObject) {
-        guard let title = taskTitleTextField.text else {
-            noTitleAlert()
-            return
-        }
-        let newTask = Task(title: title, dueDate: nil, notes: nil)
-        
-        if datePicker.hidden != true {
-            newTask.dueDate = datePicker.date
-        }
-            
-        if notesTextView.text != nil {
-            newTask.notes = notesTextView.text
-        }
-        TaskController.sharedTaskController.addTask(newTask)
-        self.navigationController?.popViewControllerAnimated(true)
-        self.dismissViewControllerAnimated(true, completion: nil)
-        
-        self.task = newTask
-    }
-
-    @IBAction func cancelButtonPressed(sender: AnyObject) {
-        self.navigationController?.popViewControllerAnimated(true)
-        self.dismissViewControllerAnimated(true, completion: nil)
+    
+    func dateDisplayedView() {
+        dateButton.hidden = false
+        datePicker.hidden = true
+        dateButtonHeightConstraint.active = true
+        datePickerHeightConstraint.active = false
     }
     
-    func noTitleAlert() {
-        
+    func datePickerChanged() {
+        let formatter = NSDateFormatter()
+        formatter.dateStyle = NSDateFormatterStyle.LongStyle
+        formatter.timeStyle = .ShortStyle
+        dateButton.setTitle(formatter.stringFromDate(datePicker.date), forState: .Normal)
+    }
+    
+    @IBAction func dueDateButtonPressed(sender: AnyObject) {
+        datePickerView()
+        dateAdded = true
+        let formatter = NSDateFormatter()
+        formatter.dateStyle = NSDateFormatterStyle.LongStyle
+        formatter.timeStyle = .ShortStyle
+        dateButton.setTitle(formatter.stringFromDate(datePicker.date), forState: .Normal)
     }
     
     func updateWithTask(task: Task) {
         taskTitleTextField.text = task.title
         
         if let notes = task.notes {
-            
             notesTextView.text = notes
         }
         if let dueDate = task.dueDate {
@@ -90,7 +108,50 @@ class TaskDetailViewController: UIViewController {
         }
     }
     
+    // MARK: Save and cancel
     
+    @IBAction func saveButtonPressed(sender: AnyObject) {
+        
+        guard let title = taskTitleTextField.text where
+                taskTitleTextField.text != "" else {
+            noTitleAlert()
+            return
+        }
+        
+        let newTask = Task(title: title, dueDate: nil, notes: nil)
+        
+        if dateAdded {
+            newTask.dueDate = datePicker.date
+        }
+            
+        if notesTextView.text != nil {
+            newTask.notes = notesTextView.text
+        }
+        if let taskNumber = taskIndex {
+            newTask.isComplete = TaskController.sharedTaskController.taskArray[taskNumber].isComplete
+            TaskController.sharedTaskController.taskArray[taskNumber] = newTask
+            TaskController.sharedTaskController.save()
+        } else {
+            TaskController.sharedTaskController.addTask(newTask)
+            self.task = newTask
+        }
+        self.navigationController?.popViewControllerAnimated(true)
+        self.dismissViewControllerAnimated(true, completion: nil)
+        taskIndex = nil
+    }
+
+    @IBAction func cancelButtonPressed(sender: AnyObject) {
+        self.navigationController?.popViewControllerAnimated(true)
+        self.dismissViewControllerAnimated(true, completion: nil)
+        taskIndex = nil
+    }
+    
+    func noTitleAlert() {
+        let noTitleAlert = UIAlertController(title: "No title", message: "Cannot save task without title.", preferredStyle: .Alert)
+        noTitleAlert.addAction(UIAlertAction(title: "Dismiss", style: .Default, handler: nil))
+        presentViewController(noTitleAlert, animated: true, completion: nil)
+    }
+
 }
 
 

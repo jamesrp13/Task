@@ -20,9 +20,6 @@ class TaskController {
     
     func addTask(task: Task) {
         taskArray.append(task)
-        for task in taskArray{
-            print("\(task.title)")
-        }
         save()
     }
     
