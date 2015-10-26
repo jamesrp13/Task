@@ -118,22 +118,28 @@ class TaskDetailViewController: UIViewController, UITextViewDelegate, UITextFiel
             return
         }
         
-        let newTask = Task(title: title, dueDate: nil, notes: nil)
-        
-        if dateAdded {
-            newTask.dueDate = datePicker.date
-        }
-            
-        if notesTextView.text != nil {
-            newTask.notes = notesTextView.text
-        }
         if let taskNumber = taskIndex {
-            newTask.isComplete = TaskController.sharedTaskController.taskArray[taskNumber].isComplete
-            TaskController.sharedTaskController.taskArray[taskNumber] = newTask
+            let newTask = TaskController.sharedTaskController.taskArray[taskNumber]
+            if dateAdded {
+                newTask.dueDate = datePicker.date
+            }
+            
+            newTask.notes = notesTextView.text
+            
+            newTask.title = taskTitleTextField.text!
+
             TaskController.sharedTaskController.save()
         } else {
+            let newTask = Task(title: title, dueDate: nil, notes: nil)
+            
+            if dateAdded {
+                newTask.dueDate = datePicker.date
+            }
+            
+                newTask.notes = notesTextView.text
+            
+
             TaskController.sharedTaskController.addTask(newTask)
-            self.task = newTask
         }
         self.navigationController?.popViewControllerAnimated(true)
         self.dismissViewControllerAnimated(true, completion: nil)

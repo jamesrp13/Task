@@ -43,7 +43,7 @@ class TaskListViewController: UIViewController, UITableViewDataSource, UITableVi
     func buttonCellButtonTapped(sender: ButtonTableViewCell) {
         if let indexPath = tableView.indexPathForCell(sender) {
         let task = TaskController.sharedTaskController.taskArray[indexPath.row]
-            if task.isComplete {
+            if task.isComplete.boolValue {
                 task.isComplete = false
             }else {
                 task.isComplete = true

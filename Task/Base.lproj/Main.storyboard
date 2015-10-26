@@ -140,8 +140,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="kbz-Rv-9D7" userLabel="Main Stack View">
-                                <rect key="frame" x="10" y="94" width="300" height="246"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" misplaced="YES" axis="vertical" alignment="center" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="kbz-Rv-9D7" userLabel="Main Stack View">
+                                <rect key="frame" x="10" y="94" width="300" height="366"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="KOk-x2-iSn" userLabel="Title Stack View">
                                         <rect key="frame" x="0.0" y="0.0" width="300" height="50"/>
@@ -179,10 +179,10 @@
                                         </constraints>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" misplaced="YES" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="Zuj-cd-Ycd" userLabel="Date Stack View">
-                                        <rect key="frame" x="0.0" y="90" width="300" height="30"/>
+                                        <rect key="frame" x="0.0" y="90" width="300" height="150"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Due Date:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I5N-mP-WRU">
-                                                <rect key="frame" x="0.0" y="0.0" width="70" height="30"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="70" height="150"/>
                                                 <animations/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="70" id="SIl-ib-3ST"/>
@@ -198,7 +198,7 @@
                                                 </variation>
                                             </label>
                                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qsY-So-sJN" userLabel="Date">
-                                                <rect key="frame" x="77" y="0.0" width="223" height="30"/>
+                                                <rect key="frame" x="77" y="0.0" width="223" height="150"/>
                                                 <animations/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="30" id="h6L-HS-9gZ"/>
@@ -211,7 +211,7 @@
                                                 </connections>
                                             </button>
                                             <datePicker hidden="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="dateAndTime" minuteInterval="15" translatesAutoresizingMaskIntoConstraints="NO" id="UbH-L2-uGk">
-                                                <rect key="frame" x="300" y="0.0" width="0.0" height="30"/>
+                                                <rect key="frame" x="300" y="0.0" width="0.0" height="150"/>
                                                 <animations/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="150" id="Wis-Hj-lB3"/>
@@ -225,7 +225,7 @@
                                         <color key="backgroundColor" red="0.92941176469999998" green="0.92941176469999998" blue="0.92941176469999998" alpha="1" colorSpace="calibratedRGB"/>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" misplaced="YES" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="Es2-M9-yDd" userLabel="Notes Stack View">
-                                        <rect key="frame" x="0.0" y="160" width="300" height="86"/>
+                                        <rect key="frame" x="0.0" y="280" width="300" height="86"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Notes:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Am7-iJ-jWv" userLabel="Notes">
                                                 <rect key="frame" x="0.0" y="0.0" width="300" height="20"/>
@@ -243,7 +243,7 @@
                                                     </mask>
                                                 </variation>
                                             </label>
-                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="o5G-Pm-lc3" userLabel="Notes">
+                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="o5G-Pm-lc3" userLabel="Notes">
                                                 <rect key="frame" x="0.0" y="20" width="300" height="66"/>
                                                 <animations/>
                                                 <color key="backgroundColor" red="0.92941176469999998" green="0.92941176469999998" blue="0.92941176469999998" alpha="1" colorSpace="calibratedRGB"/>

@@ -7,36 +7,42 @@
 //
 
 import Foundation
+import CoreData
 
 class TaskController {
     
     static let sharedTaskController = TaskController()
     
-    var taskArray: [Task] = []
-
-    init() {
-        load()
+    var taskArray: [Task] {
+        let moc = Stack.sharedStack.managedObjectContext
+        let request = NSFetchRequest(entityName: "Task")
+        do {
+            return try moc.executeFetchRequest(request) as! [Task]
+        } catch {
+            print("Error loading: \(error)")
+            return []
+        }
     }
     
     func addTask(task: Task) {
-        taskArray.append(task)
         save()
     }
     
     func removeTask(indexPath: NSIndexPath) {
-        taskArray.removeAtIndex(indexPath.row)
+        if let moc = taskArray[indexPath.row].managedObjectContext {
+            moc.deleteObject(taskArray[indexPath.row])
+        }
         save()
     }
     
     func save() {
-        NSKeyedArchiver.archiveRootObject(taskArray, toFile: Task.ArchiveURL.path!)
-    }
-    
-    func load() {
-        if let unarchivedTasks = NSKeyedUnarchiver.unarchiveObjectWithFile(Task.ArchiveURL.path!) as? [Task]{
-            self.taskArray = unarchivedTasks
-        } else {
-            taskArray = []
+        let moc = Stack.sharedStack.managedObjectContext
+        
+        do {
+            try moc.save()
+        } catch {
+            print("Error saving: \(error)")
         }
     }
+    
 }
