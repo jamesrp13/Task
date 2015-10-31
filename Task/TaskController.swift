@@ -29,8 +29,8 @@ class TaskController {
     }
     
     func removeTask(indexPath: NSIndexPath) {
-        if let moc = taskArray[indexPath.row].managedObjectContext {
-            moc.deleteObject(taskArray[indexPath.row])
+        if let moc = taskArray[indexPath.row - 1].managedObjectContext {
+            moc.deleteObject(taskArray[indexPath.row - 1])
         }
         save()
     }

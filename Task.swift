@@ -21,6 +21,7 @@ class Task: NSManagedObject {
         self.dueDate = dueDate
         self.notes = notes
         self.isComplete = isComplete
+        self.dateCreated = NSDate()
     }
 }
 

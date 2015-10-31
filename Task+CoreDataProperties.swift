@@ -18,6 +18,7 @@ extension Task {
     @NSManaged var dueDate: NSDate?
     @NSManaged var notes: String?
     @NSManaged var isComplete: NSNumber
+    @NSManaged var dateCreated: NSDate
 
 }
 
