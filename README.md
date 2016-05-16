@@ -45,6 +45,44 @@ Set up a basic List-Detail view hierarchy using a UITableViewController for a Ta
 6. Add a segue from the Add button from the first scene to the second scene
 7. Add a class file ```TaskDetailTableViewController.swift``` and assign the scene in the Storyboard
 
+
+### Add a Core Data Stack
+
+Add a simple Stack to your application to start working with Core Data. You will build your Data Model and NSManagedObject subclass objects. Then you will add a Stack class that will initialize your persistent store, coordinator, and managed object context.
+
+1. Import the Core Data ```Stack.swift``` template available on [Github](https://gist.github.com/calebhicks/404165bdb6bc77502026)
+    * note: Review how this file works, and what it does for you each time you work with it.
+
+### Implement Core Data Model
+
+1. Create a new Data Model template file (File -> New -> iOS Core Data -> Data Model), use the app name
+2. Add a New Entity called Task with properties for title, note, due, and isComplete.
+3. Use the Data Model Inspector to set notes and due to optional values, set isComplete with a default value of false
+4. Assign a Class name of Task, this is what Xcode will use to create your NSManagedObject and CoreDataProperties files
+4. Create Managed Object Subclass
+    * note: Consider the purpose of the two different files you get
+    * note: Verify that name and isComplete are required properties, and notes and due are optional properties
+
+Now you need to add a Convenience Initializer to your ```Task.swift``` file that matches what would normally make as a memberwise initializer. NSManagedObjects have a designated initializer called ```init(entity: entity, insertIntoManagedObjectContext: context)``` that gets called by the ```NSEntityDescription.entityForName("Task", inManagedObjectContext: context)``` function that is traditionally used to create Managed Objects. You will write a convenience initializer that uses those two designated function calls and then set properties on the Task.
+
+5. Add a Convenience Initializer to the ```Task.swift``` file
+    * note: You can optionally add a 'managedObjectContext' parameter, but for our app we only have one, and we can set it to a default parameter value of ```Stack.sharedStack.managedObjectContext```)
+
+```
+convenience init(name: String, notes: String? = nil, due: NSDate? = nil, context: NSManagedObjectContext = Stack.sharedStack.managedObjectContext) {
+
+    // there is no graceful way to respond to a failure on NSEntityDescription.entityForName, force unwrapping and forcing a crash is the desired behavior for this app
+    
+    // designated initializer
+
+    let entity = NSEntityDescription.entityForName("Task", inManagedObjectContext: context)!
+    
+    self.init(entity: entity, insertIntoManagedObjectContext: context)
+    
+    // set properties here
+}
+```
+
 ### Controller Basics
 
 Create a TaskController model object controller that will manage and serve Task objects to the rest of the application. The TaskController will also handle persistence using Core Data.
@@ -204,43 +242,6 @@ Write a protocol for the ```ButtonTableViewCell``` to delegate handling a button
 4. Update the ```buttonTapped``` IBAction to check if a delegate is assigned, and if so, call the delegate protocol function
 5. Adopt the protocol in the ```TaskListTableViewController``` class
 6. Implement the ```buttonCellButtonTapped``` delegate method to capture the Task as a variable, toggle task.isComplete, save to persistent storage, and reload the table view
-
-### Add a Core Data Stack
-
-Add a simple Stack to your application to start working with Core Data. You will build your Data Model and NSManagedObject subclass objects. Then you will add a Stack class that will initialize your persistent store, coordinator, and managed object context.
-
-1. Import the Core Data ```Stack.swift``` template available on [Github](https://gist.github.com/calebhicks/404165bdb6bc77502026)
-    * note: Review how this file works, and what it does for you each time you work with it.
-
-### Implement Core Data Model
-
-1. Create a new Data Model template file (File -> New -> iOS Core Data -> Data Model), use the app name
-2. Add a New Entity called Task with properties for title, note, due, and isComplete.
-3. Use the Data Model Inspector to set notes and due to optional values, set isComplete with a default value of false
-4. Assign a Class name of Task, this is what Xcode will use to create your NSManagedObject and CoreDataProperties files
-4. Create Managed Object Subclass
-    * note: Consider the purpose of the two different files you get
-    * note: Verify that name and isComplete are required properties, and notes and due are optional properties
-
-Now you need to add a Convenience Initializer to your ```Task.swift``` file that matches what would normally make as a memberwise initializer. NSManagedObjects have a designated initializer called ```init(entity: entity, insertIntoManagedObjectContext: context)``` that gets called by the ```NSEntityDescription.entityForName("Task", inManagedObjectContext: context)``` function that is traditionally used to create Managed Objects. You will write a convenience initializer that uses those two designated function calls and then set properties on the Task.
-
-5. Add a Convenience Initializer to the ```Task.swift``` file
-    * note: You can optionally add a 'managedObjectContext' parameter, but for our app we only have one, and we can set it to a default parameter value of ```Stack.sharedStack.managedObjectContext```)
-
-```
-convenience init(name: String, notes: String? = nil, due: NSDate? = nil, context: NSManagedObjectContext = Stack.sharedStack.managedObjectContext) {
-
-    // there is no graceful way to respond to a failure on NSEntityDescription.entityForName, force unwrapping and forcing a crash is the desired behavior for this app
-    
-    // designated initializer
-
-    let entity = NSEntityDescription.entityForName("Task", inManagedObjectContext: context)!
-    
-    self.init(entity: entity, insertIntoManagedObjectContext: context)
-    
-    // set properties here
-}
-```
 
 ### Persistence With CoreData
 
