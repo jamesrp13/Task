@@ -6,17 +6,13 @@ Students will build a simple task tracking app to practice project planning, pro
 
 Students who complete this project independently are able to:
 
-### Part One - Project Planning, Model Objects, and Controllers
+### Part One - Project Planning, Model Objects and Controllers, Persistence with CoreData
 
 * follow a project planning framework to build a development plan
 * follow a project planning framework to prioritize and manage project progress
 * identify and build a simple navigation view hierarchy
-* create model objects that conform to the Equality and NSCoding protocols
-* create model object controllers that use NSKeyedArchiver and NSKeyedUnarchiver for data persistence
+* create a model object using CoreData
 * add staged data to a model object controller
-
-### Part Two - Intermediate Table Views
-
 * implement a master-detail interface
 * implement the UITableViewDataSource protocol
 * implement a static UITableView
@@ -24,14 +20,17 @@ Students who complete this project independently are able to:
 * write a custom delegate protocol
 * use a date picker as a custom input view
 * wire up view controllers to model object controllers
-
-### Part Three - Core Data
-
 * add a Core Data stack to a project
 * implement basic data persistence with Core Data
 * use NSPredicates to filter search results
 
-## Part One - Project Planning, Model Objects, and Controllers
+### Part Two - NSFetchedResultsController
+
+* use an NSFetchedResultsController to populate a UITableView with information from CoreData
+* implement the NSFetchedResultsControllerDelegate to observe changes in CoreData information and update the display accordingly
+
+
+## Part One - Project Planning, Model Objects and Controllers, Persistence with CoreData
 
 ### View Hierarchy
 
@@ -46,46 +45,20 @@ Set up a basic List-Detail view hierarchy using a UITableViewController for a Ta
 6. Add a segue from the Add button from the first scene to the second scene
 7. Add a class file ```TaskDetailTableViewController.swift``` and assign the scene in the Storyboard
 
-### Implement Model
-
-Create a Task model class that will hold a title, note, due date, and status for each task.
-
-1. Create a ```Task.swift``` class file and defune a new ```Task``` class
-2. Add properties for name, notes, due, and isComplete
-    * note: Since a Task can exist without notes or a due date, notes and due are optional properties
-3. Add a memberwise initializer that takes parameters for each property
-    * note: Set default parameters for notes, due, and isComplete
-4. Adopt the NSCoding protocol and add the required ```init?(coder aDecoder: NSCoder)``` and ```encodeWithCoder(aCoder: NSCoder)``` functions
-    * note: It is best practice to create static internal keys to use in encoding and decoding (ex. ```private let NameKey = "name"```)
-5. Adopt the Equatable protocol and add the required ```func ```(lhs: Task, rhs: Task) -> Bool``` function
-
-Interesting note about NSObjects, NSDate and Equatable in Swift 2.0:
-
-NSObjects do not use the ```==``` function to check equality. They use the older ```isEqual``` function. NSObject comes with a default implementation of ```isEqual```, so for us to actually be able to check equality using these NSObject subclasses, we will need to override the ```isEqual``` function.
-
-```isEqual``` does not come with a ```rhs``` and ```lhs``` parameters. It comes with the ```object``` parameter that you are checking for equality against ```self```.
-
-```NSDate``` comparisons are beyond the scope of this project. For now, do not check the due date ```isEqual``` or ```==``` methods.
-
 ### Controller Basics
 
-Create a TaskController model object controller that will manage and serve Task objects to the rest of the application. The TaskController will also handle persistence using NSKeyedArchiver and NSKeyedUnarchiver, which will later be replaced with Core Data.
+Create a TaskController model object controller that will manage and serve Task objects to the rest of the application. The TaskController will also handle persistence using Core Data.
 
 Views in our application want to display completed and incomplete tasks separately. Build the TaskController with a completedTasks and incompleteTasks computed properties that filter a tasks array.
 
 1. Create a ```TaskController.swift``` file and define a new ```TaskController``` class inside.
+7. Create a sharedController property as a shared instance. 
 2. Add a tasks Array property with an empty default value.
 3. Add a completedTasks computed Array property that returns only complete tasks.
     * note: Use a filter function on the tasks array
 4. Add an incompleteTasks computed Array property that returns only incomplete tasks. 
     * note: Use a filter function on the tasks array
-5. Create a ```addTask(task: Task)``` function that adds the task parameter to the tasks array
-    * note: At this point, you will need to remove your computed property, as you cannot set values to computed properties.
-6. Create a ```removeTask(task: Task)``` function that removes the task from the tasks array
-    * note: There is no 'removeObject' function on arrays. You will need to find the index of the object and then remove the object at that index.
-    * note: If you face a compiler error, you may need to check that you have properly implented the Equatable protocol for Task objects
-7. Create a sharedController property as a shared instance. 
-    * note: Review the syntax for creating shared instance properties
+5. Create method signatures for ```addTask(title: String, notes: String?, due: NSDate?)```, ```removeTask(task: Task)```, ```updateTask(task: Task, title: String, notes: String?, due: NSDate?, isComplete: Bool)```, ```saveToPersistentStore()```, and ```fetchTasks() -> [Task]```.
 
 ### Controller Staged Data Using a Mock Data Function
 
@@ -95,60 +68,13 @@ There are many ways to add mock data to model object controllers. We will do so 
 
 1. Create a ```mockTasks:[Task]``` computed property that holds a number of staged Task objects
 2. Initialize a small number of Task objects with varying properties (include at least one 'isComplete' task and one task with a due date)
-3. When you want mock data, set self.tasks to self.mockTasks in the initializer. Remove it when you no longer want mock data.
+
+Generally, when you want mock data, set self.tasks to self.mockTasks in the initializer. Remove it when you no longer want mock data.
+
+1. In your controller's initializer, set your tasks array equal to your mock tasks.
     * note: If you have not added an initializer, add one.
-    * note: Unit tests assume mock data is not being used.
 
 At this point, you can go and wire up your list table view to display the complete or incomplete tasks to check your progress on Part One. We will focus on the list and detail views in Part Two.
-
-### Persistence With NSKeyedArchiver and NSKeyedUnarchiver
-
-Add persistence using NSKeyedArchiver and NSKeyedUnarchiver to the TaskController. Archiving is similar to working with NSUserDefaults, but uses NSCoders to serialize and deserialize objects instead of our ```initWithDictionary``` and ```dictionaryRepresentation``` functions. Both are valuable to know and be comfortable with.
-
-NSKeyedArchiver serializes objects and saves them to a file on the device. NSKeyedUnarchiver pulls that file and deserializes the data back into our model objects.
-
-Because of the way that iOS implements security and sandboxing, each application has it's own 'Documents' directory that has a different path each time the application is launched. When you want to write to or read from that directory, you need to first search for the directory, then capture the path as a reference to use where needed.
-
-It is best practice to separate that logic into a separate method that returns the path. Here is an example method:
-
-```
-func filePath(key: String) -> String {
-    let directorySearchResults = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory,NSSearchPathDomainMask.AllDomainsMask, true)
-    let documentsPath: AnyObject = directorySearchResults[0]
-    let entriesPath = documentsPath.stringByAppendingString("/\(key).plist")
-    
-    return entriesPath
-}
-```
-
-This method accepts a string as a key and will return the path to a file in the Documents directory with that name. 
-
-1. Write a method called ```saveToPersistentStorage()``` that will save the current tags array to a file using NSKeyedArchiver
-    * note: ``NSKeyedArchiver.archiveRootObject(self.tasks, toFile: self.filePath(TaskKey))```
-    note: Avoid 'Magic Strings' when using NSKeyedArchiver. Add a 'TaskKey'.
-2. Write a method called ```loadFromPersistentStorage()``` that will load saved Task objects and set self.tasks to the results
-    * note: Capture the data using ```NSKeyedUnarchiver.unarchiveObjectWithFile(self.filePath(TaskKey))```, unwrap the Optional results and set self.tasks
-3. Call the ```loadFromPersistentStorage()``` function when the TaskCotnroller is initialized
-4. Call the ```saveToPersistentStorage()``` any time that the list of tasks is modified
-
-### Black Diamonds
-
-* Add support for projects (task parent object), or tags (task child object) to categorize your tasks
-    * note: Doing this will require extra black diamond work on the next two sections as well
-* Create a Unit test that verifies project or tag functionality by converting an instance to and from NSData
-* Add support for due date notifications scheduled to fire when the task is due
-* Create a Unit test that verifies notification scheduling
-
-### Tests
-
-Because of the way that we implement persistence and write the tests, you may need to delete the app to start with a clean slate for testing.
-
-* Verifies mockData
-* Verifies completedTasks returns only completed tasks
-* Verifies incompleteTasks returns only incomplete tasks
-* Verifies TaskController persistence
-
-## Part Two - Intermediate Table Views
 
 ### Basic Task List View
 
@@ -279,50 +205,26 @@ Write a protocol for the ```ButtonTableViewCell``` to delegate handling a button
 5. Adopt the protocol in the ```TaskListTableViewController``` class
 6. Implement the ```buttonCellButtonTapped``` delegate method to capture the Task as a variable, toggle task.isComplete, save to persistent storage, and reload the table view
 
-### Black Diamonds
-
-* Add a segmented control as the title view that toggles whether the table view should display complete or incomplete tasks
-* Add support for entering 'Editing' mode on a table view and add a cell that allows you to [insert](https://developer.apple.com/library/ios/documentation/UserExperience/Conceptual/TableView_iPhone/ManageInsertDeleteRow/ManageInsertDeleteRow.html) new tasks
-* Add [automatic resizing](https://pontifex.azurewebsites.net/self-sizing-uitableviewcell-with-uitextview-in-ios-8/) to the table view cell with the Notes text view
-* Update the settings for the checkbox images to [inherit the tint color](http://stackoverflow.com/questions/19829356/color-tint-uibutton-image) of the button
-
-### Tests
-
-Because of the way that we implement persistence and write the tests, you may need to delete the app to start with a clean slate for testing.
-
-* Validates task lifecycle (add, modify, delete)
-* Validates task lifecycle (add, modify, mark complete)
-* Validates Detail View updating with task data
-* Validates date capture using date picker
-* Validates dismissing keyboard via gesture recognizer
-
-## Part Three - Core Data
-
-You will use Core Data to add more advanced data persistence to the Task app. You will refactor the Task model object and the Task Controller to work with a Core Data stack. The View Controllers should work without any modification.
-
 ### Add a Core Data Stack
 
 Add a simple Stack to your application to start working with Core Data. You will build your Data Model and NSManagedObject subclass objects. Then you will add a Stack class that will initialize your persistent store, coordinator, and managed object context.
 
-### Add the Core Data Stack File
-
 1. Import the Core Data ```Stack.swift``` template available on [Github](https://gist.github.com/calebhicks/404165bdb6bc77502026)
     * note: Review how this file works, and what it does for you each time you work with it.
 
-### Create and Modify the Task NSManagedObject
+### Implement Core Data Model
 
 1. Create a new Data Model template file (File -> New -> iOS Core Data -> Data Model), use the app name
-2. Add a New Entity called Task with the same properties and types as our old Task object Entity with properties
+2. Add a New Entity called Task with properties for title, note, due, and isComplete.
 3. Use the Data Model Inspector to set notes and due to optional values, set isComplete with a default value of false
 4. Assign a Class name of Task, this is what Xcode will use to create your NSManagedObject and CoreDataProperties files
-5. Delete the ```Task.swift``` file we created earlier to make room for the Xcode generated NSManagedObject
 4. Create Managed Object Subclass
     * note: Consider the purpose of the two different files you get
     * note: Verify that name and isComplete are required properties, and notes and due are optional properties
 
-Now you need to add a Convenience Initializer to your ```Task.swift``` file that matches our old initializer for the Task object. NSManagedObjects have a designated initializer called ```init(entity: entity, insertIntoManagedObjectContext: context)``` that gets called by the ```NSEntityDescription.entityForName("Task", inManagedObjectContext: context)``` function that is traditionally used to create Managed Objects. You will write a convenience initializer that uses those two designated function calls and then set properties on the Task.
+Now you need to add a Convenience Initializer to your ```Task.swift``` file that matches what would normally make as a memberwise initializer. NSManagedObjects have a designated initializer called ```init(entity: entity, insertIntoManagedObjectContext: context)``` that gets called by the ```NSEntityDescription.entityForName("Task", inManagedObjectContext: context)``` function that is traditionally used to create Managed Objects. You will write a convenience initializer that uses those two designated function calls and then set properties on the Task.
 
-5. Add a Convenience Initializer to the ```Task.swift``` file that matches the old Task initializer
+5. Add a Convenience Initializer to the ```Task.swift``` file
     * note: You can optionally add a 'managedObjectContext' parameter, but for our app we only have one, and we can set it to a default parameter value of ```Stack.sharedStack.managedObjectContext```)
 
 ```
@@ -340,27 +242,27 @@ convenience init(name: String, notes: String? = nil, due: NSDate? = nil, context
 }
 ```
 
-### Update the TaskController and Other Classes
+### Persistence With CoreData
 
-Following proper MVC principles shields you from refactoring major portions of the application, however, there are a few changes to make to ```TaskController``` and other classes to adjust for how Core Data works.
-
-1. Refactor the ```.tasks``` array to be a computed property
-2. In the computed property, instantiate an NSFetchRequest for 'Task' entities
-3. Execute and return the results of the fetch request
-4. You can now remove ```loadFromPersistentStorage``` because we now do a fetch request each time the array of tasks is accessed
-
-Core Data does not store Boolean properties, as a result, NSManagedObjects store Booleans as NSNumber properties. NSNumber comes with a helper function ```.boolValue``` that is useful for converting the NSNumber into a Bool. Refactor your code that used the ```.isComplete``` property to now use ```.isComplete.boolValue```
-
-5. Update isComplete to ```isComplete.boolValue``` everywhere it was being used. The compiler should direct you to specific cases
+1. Your ```addTask(title: String, notes: String?, due: NSDate?)``` function should initialize a task object, save the tasks, and then fetch tasks from the persistent store and assign the returned tasks to your controller's ```.tasks``` array.
+    * note: Initializing a subclass of NSManagedObject like Task automatically puts it into the CoreData Managed Object Context so you don't need to initialize and then add it anywhere
+2. Your ```removeTask(task: Task)``` function should delete the task from the Managed Object Context, save the tasks, and the fetch tasks from the persistent store and assign the returned tasks to your controller's ```.tasks``` array.
+3. Your ```saveToPersistentStore()``` should save everything in the Managed Object Context to the persistent store.
+4. Your ```fetchTasks() -> [Task]``` should perform an NSFetchRequest on the Managed Object Context to get tasks, and return an array of tasks.
+    * note: You may need to review the Swift Programming Guide to understand the functions that throw.
 
 ### Black Diamonds
 
+* Add support for projects (task parent object), or tags (task child object) to categorize your tasks
+* Create a Unit test that verifies project or tag functionality by converting an instance to and from NSData
+* Add support for due date notifications scheduled to fire when the task is due
+* Create a Unit test that verifies notification scheduling
+* Add a segmented control as the title view that toggles whether the table view should display complete or incomplete tasks
+* Add support for entering 'Editing' mode on a table view and add a cell that allows you to [insert](https://developer.apple.com/library/ios/documentation/UserExperience/Conceptual/TableView_iPhone/ManageInsertDeleteRow/ManageInsertDeleteRow.html) new tasks
+* Add [automatic resizing](https://pontifex.azurewebsites.net/self-sizing-uitableviewcell-with-uitextview-in-ios-8/) to the table view cell with the Notes text view
+* Update the settings for the checkbox images to [inherit the tint color](http://stackoverflow.com/questions/19829356/color-tint-uibutton-image) of the button
 * Refactor the 'incompleteTasks' and 'completedTasks' arrays to use an NSFetchRequest with an NSPredicate to return the correct results
 * Implement a Fetched Results Controller for the Table View DataSource
-
-### Tests
-
-* Validates same assumptions as Part 1 and Part 2
 
 ## Contributions
 
